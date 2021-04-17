@@ -2,10 +2,15 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
+#include "serial.h"
+
+#include <stdio.h>
 
 volatile uint16_t _buttons;
 
 volatile uint8_t _digits;
+
+volatile uint8_t _buttons_updated = 0;
 
 void ldr_init(int digits)
 {
@@ -16,10 +21,15 @@ void ldr_init(int digits)
     // Set the number of digits we have
     _digits = digits;
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-    {
+
         // Enable interrupt on INT0, Active low
-        //GICR |= (1<<INT0);
+        GICR |= (1<<INT0);
+
+        // Set as input
+        DDRD |= (1<<PORTD2);
+
+        // enable pullup
+        PORTD |= (1<<PORTD2) | (1<<PORTD3);
 
         // set din, clk, and stb to output
         DDRB |= (1<<LDR_DIN) | (1<<LDR_CLK) | (1<<LDR_STB);
@@ -32,7 +42,8 @@ void ldr_init(int digits)
 
         // set stb default to 1
         PORTB |= _BV(LDR_STB);
-    }
+
+
 
     _delay_us(200);
     ldr_set_discreet_brightness(1);
@@ -229,4 +240,25 @@ void ldr_set_dig_brightness(uint8_t brightness)
     ldr_send_data(&data[0], 5);
 
 #endif
+}
+
+uint8_t ldr_buttons_updated(uint16_t* new_buttons)
+{
+    if(_buttons_updated)
+        _buttons_updated = 0;
+
+    *new_buttons = _buttons;
+
+    return 1;
+}
+
+volatile uint16_t _buttons_state = 0;
+ISR (INT0_vect)
+{
+    _buttons_state = ldr_get_buttons();
+
+    // Inverse button states
+    _buttons ^= (0x3FF & _buttons_state);
+
+    _buttons_updated = 1;
 }

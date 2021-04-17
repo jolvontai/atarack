@@ -30,7 +30,7 @@
 #endif
 
 #ifndef LDR_DIN
-#define LDR_DIN PORTB5
+#define LDR_DIN PORTB6
 #endif
 
 #ifndef LDR_DIN_REG
@@ -38,7 +38,7 @@
 #endif
 
 #ifndef LDR_CLK
-#define LDR_CLK PORTB4
+#define LDR_CLK PORTB7
 #endif
 
 #ifndef LDR_CLK_REG
@@ -46,7 +46,7 @@
 #endif
 
 #ifndef LDR_STB
-#define LDR_STB PORTB3
+#define LDR_STB PORTB4
 #endif
 
 #ifndef LDR_STB_REG
@@ -158,5 +158,7 @@ void ldr_set_dig_leds(uint8_t states, uint8_t dig);
 void ldr_set_dig_brightness(uint8_t brightness);
 
 uint16_t ldr_get_buttons();
+
+uint8_t ldr_buttons_updated(uint16_t* new_buttons);
 
 #endif // LED_DRIVER_H
