@@ -1,6 +1,8 @@
 #include "ym2149.h"
 #include "notes.h"
 
+#include "serial.h"
+
 #include <util/delay.h>
 
 void test_ym2149()
