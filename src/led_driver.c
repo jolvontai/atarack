@@ -258,7 +258,7 @@ ISR (INT0_vect)
     _buttons_state = ldr_get_buttons();
 
     // Inverse button states
-    _buttons ^= (0x3FF & _buttons_state);
+    _buttons ^= _buttons_state;
 
     _buttons_updated = 1;
 }
