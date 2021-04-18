@@ -1,7 +1,8 @@
 #include "serial.h"
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
-void usart_init()
+void uart_init()
 {
     // Baud rate
     UBRRH = (uint8_t)(BAUD_RATE >> 8);
@@ -15,7 +16,7 @@ void usart_init()
     UCSRC = (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);
 }
 
-void usart_tx(uint8_t data)
+void uart_tx(uint8_t data)
 {
     // Wait empty buffer
     while (!(UCSRA & (1 << UDRE)))
@@ -25,7 +26,7 @@ void usart_tx(uint8_t data)
     UDR = data;
 }
 
-uint8_t usart_rx()
+uint8_t uart_rx()
 {
     // Wait data
     while (!(UCSRA & (1 << RXC)))
@@ -33,20 +34,22 @@ uint8_t usart_rx()
     return UDR;
 }
 
-void usart_send(const char *szMessage)
+void uart_send(const char *szMessage)
 {
+    
     int i = 0;
     while (szMessage[i] != '\0')
     {
-        usart_tx(szMessage[i]);
+        uart_tx(szMessage[i]);
         i++;
     }
 
-    usart_tx('\r');
-    usart_tx('\n');
+    uart_tx('\r');
+    uart_tx('\n');
+
 }
 
-void usart_recv(char *buffer, int maxLen)
+void uart_recv(char *buffer, int maxLen)
 {
     // TODO
 }

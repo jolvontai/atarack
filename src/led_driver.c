@@ -25,6 +25,8 @@ void ldr_init(int digits)
         // Enable interrupt on INT0, Active low
         GICR |= (1<<INT0);
 
+        // falling edge triggers interrupt
+
         // Set as input
         DDRD |= (1<<PORTD2);
 
@@ -106,6 +108,8 @@ uint8_t ldr_read_data(uint8_t address)
     uint8_t command = LDR_RD_COMMAND | LDR_PAGE_READ | address;
     uint8_t output = 0;
 
+    //cli();
+
     //Initialize transaction
     LDR_CLK_REG |= _BV(LDR_CLK);
     LDR_STB_REG &= ~(_BV(LDR_STB));
@@ -142,6 +146,8 @@ uint8_t ldr_read_data(uint8_t address)
     DDRB |= _BV(LDR_DIN);
     PORTB |= _BV(LDR_DIN);
 
+    //sei();
+
 
     return output;
 }
@@ -153,6 +159,7 @@ void ldr_send_data(uint8_t* data, uint8_t length)
     uint8_t copyByte;
 
     // we should disable interrupts here
+    //cli();
 
     LDR_CLK_REG |= (1<<LDR_CLK);
     LDR_STB_REG &= ~(1<<LDR_STB);
@@ -166,6 +173,7 @@ void ldr_send_data(uint8_t* data, uint8_t length)
     _delay_us(2);
     LDR_STB_REG |= (1<<LDR_STB);
 
+    //sei();
     // Possibly re-enable  interrupts here
 }
 
@@ -252,13 +260,23 @@ uint8_t ldr_buttons_updated(uint16_t* new_buttons)
     return 1;
 }
 
+uint16_t indeksi = 0;
 volatile uint16_t _buttons_state = 0;
 ISR (INT0_vect)
 {
+    cli();
     _buttons_state = ldr_get_buttons();
+
+     char matti[64];
 
     // Inverse button states
     _buttons ^= _buttons_state;
 
+    sprintf(matti, "id: %d, nappulat: %d", indeksi, _buttons);
+    uart_send(matti);
+    indeksi++;
+
     _buttons_updated = 1;
+
+    sei();
 }
