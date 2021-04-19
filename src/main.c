@@ -5,11 +5,19 @@
 
 #include "led_driver.h"
 
+#include "adc.h"
+
 #include <util/delay.h>
 
 #include <avr/interrupt.h>
 
+#include <avr/io.h>
+
+#include <stdio.h>
+
 #define USE_BUTTONS_IN_TEST 1
+
+#define ADC_CHANNELS 5
 
 void test_ym2149()
 {
@@ -21,6 +29,7 @@ void test_ym2149()
   // Initialize stled
   ldr_init(1);
 
+  adc_init();
   
 
   sei();
@@ -68,13 +77,17 @@ void test_ym2149()
 
   uint8_t envelope_changed = 0;
 
+  uint16_t adc_values[ADC_CHANNELS];
+
+  char matti[64];
+
   while (1)
   {
-    if (delay > tune[i].delay)
-    {
-      i = (i + 1) % len;
-      delay = 0;
-    }
+    // if (delay > tune[i].delay)
+    // {
+    //   i = (i + 1) % len;
+    //   delay = 0;
+    // }
 #if(USE_BUTTONS_IN_TEST)
     if(ldr_buttons_updated(&new_button_states))
     {
@@ -255,21 +268,50 @@ void test_ym2149()
 
       old_button_states = new_button_states;
     }
+    
 #endif
 
-    int data = tune[i].note;
 
-    snd_write(SND_CHA_FINE_TONE, data & 0xff);
-    snd_write(SND_CHA_ROUGH_TONE, data >> 8);
+  uint16_t new_adc_value = 0;
 
-    snd_write(SND_CHB_FINE_TONE, data & 0xff);
-    snd_write(SND_CHB_ROUGH_TONE, data >> 8);
+  new_adc_value = adc_read_pin(PORTA0);
 
-    snd_write(SND_CHC_FINE_TONE, data & 0xff);
-    snd_write(SND_CHC_ROUGH_TONE, data >> 8);
+  if(new_adc_value != adc_values[PORTA0])
+  {
+    snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
+    snd_write(SND_CHA_ROUGH_TONE, (new_adc_value >> 8));
 
-    delay += 50;
-    _delay_ms(50);
+    adc_values[PORTA0] = new_adc_value;
+  }
+
+  _delay_us(250);
+
+  new_adc_value = adc_read_pin(PORTA1);
+
+  if(new_adc_value != adc_values[PORTA1])
+  {
+    snd_write(SND_CHB_FINE_TONE, new_adc_value & 0xFF);
+    snd_write(SND_CHB_ROUGH_TONE, (new_adc_value >> 8));
+
+    adc_values[PORTA1] = new_adc_value;
+  }
+
+  sprintf(matti, "adc arvo: %d", new_adc_value);
+  uart_send(matti);
+
+    // int data = tune[i].note;
+
+    // snd_write(SND_CHA_FINE_TONE, data & 0xff);
+    // snd_write(SND_CHA_ROUGH_TONE, data >> 8);
+
+    // snd_write(SND_CHB_FINE_TONE, data & 0xff);
+    // snd_write(SND_CHB_ROUGH_TONE, data >> 8);
+
+    // snd_write(SND_CHC_FINE_TONE, data & 0xff);
+    // snd_write(SND_CHC_ROUGH_TONE, data >> 8);
+
+    // delay += 50;
+    // _delay_ms(50);
   }
 }
 
