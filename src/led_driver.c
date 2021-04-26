@@ -34,7 +34,8 @@ void ldr_init(int digits)
         PORTD |= (1<<PORTD2) | (1<<PORTD3);
 
         // set din, clk, and stb to output
-        DDRB |= (1<<LDR_DIN) | (1<<LDR_CLK) | (1<<LDR_STB);
+        DDRB |= (1<<LDR_DIN) | (1<<LDR_CLK);
+        DDRD |= (1 << LDR_STB);
         
         // set data default to 0
         PORTB &= ~(_BV(LDR_DIN));
@@ -43,7 +44,7 @@ void ldr_init(int digits)
         PORTB |= _BV(LDR_CLK);
 
         // set stb default to 1
-        PORTB |= _BV(LDR_STB);
+        LDR_STB_REG |= _BV(LDR_STB);
 
 
 
@@ -142,7 +143,7 @@ uint8_t ldr_read_data(uint8_t address)
 
     _delay_us(2);
 
-    PORTB |= _BV(LDR_STB);
+    LDR_STB_REG |= _BV(LDR_STB);
     DDRB |= _BV(LDR_DIN);
     PORTB |= _BV(LDR_DIN);
 
