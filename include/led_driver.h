@@ -46,11 +46,11 @@
 #endif
 
 #ifndef LDR_STB
-#define LDR_STB PORTB4
+#define LDR_STB PORTD7
 #endif
 
 #ifndef LDR_STB_REG
-#define LDR_STB_REG PORTB
+#define LDR_STB_REG PORTD
 #endif
 
 // -----------------
