@@ -1,11 +1,12 @@
-#include "serial.h"
+#include "uart.h"
 
-#include <stdarg.h>
-#include <stdlib.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-void uart_init()
+#include <stdarg.h>
+#include <stdio.h>
+
+void UART_init()
 {
     // Baud rate
     UBRRH = (uint8_t)(BAUD_RATE >> 8);
@@ -18,7 +19,7 @@ void uart_init()
     UCSRC = (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);
 }
 
-void uart_tx(uint8_t data)
+void UART_tx(uint8_t data)
 {
     // Wait empty buffer
     while (!(UCSRA & (1 << UDRE)))
@@ -28,7 +29,7 @@ void uart_tx(uint8_t data)
     UDR = data;
 }
 
-uint8_t uart_rx()
+uint8_t UART_rx()
 {
     // Wait data
     while (!(UCSRA & (1 << RXC)))
@@ -36,25 +37,25 @@ uint8_t uart_rx()
     return UDR;
 }
 
-void uart_send(const char *szMessage)
+void UART_send(const char *szMessage)
 {
     int i = 0;
     while (szMessage[i] != '\0')
     {
-        uart_tx(szMessage[i]);
+        UART_tx(szMessage[i]);
         i++;
     }
 
-    uart_tx('\r');
-    uart_tx('\n');
+    UART_tx('\r');
+    UART_tx('\n');
 }
 
-void uart_vsend(const char* fmt, ...)
+void UART_vsend(const char* fmt, ...)
 {
     static char buff[256] = {};
     va_list args;
     va_start(args, fmt);
     vsnprintf(buff, 255, fmt, args);
-    uart_send(buff);
+    UART_send(buff);
     va_end(args);
 }

@@ -1,17 +1,13 @@
 #include "ym2149.h"
 #include "notes.h"
-
-#include "serial.h"
-
-#include "led_driver.h"
-
+#include "uart.h"
+#include "buttons.h"
+#include "stled316s.h"
 #include "adc.h"
 
-#include <util/delay.h>
-
-#include <avr/interrupt.h>
-
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
 
 #include <stdio.h>
 
@@ -24,7 +20,7 @@ void test_ym2149()
   // Initialize sound chip
   snd_init();
 
-  uart_init();
+  UART_init();
 
   // Initialize stled
   ldr_init(1);
@@ -78,8 +74,6 @@ void test_ym2149()
   uint8_t envelope_changed = 0;
 
   uint16_t adc_values[ADC_CHANNELS];
-
-  char matti[64];
 
   while (1)
   {
@@ -166,9 +160,9 @@ void test_ym2149()
         }
       }
 
-      if((old_button_states & BTN_CHA_ENVEL) ^ (new_button_states & BTN_CHA_ENVEL))
+      if((old_button_states & BTN_CHA_ENV) ^ (new_button_states & BTN_CHA_ENV))
       {
-        if(new_button_states & BTN_CHA_ENVEL)
+        if(new_button_states & BTN_CHA_ENV)
         {
           snd_write(SND_CHA_LEVEL, SND_MAX_VOLUME_LEVEL | SND_LEVEL_MODE_ENV);
         }
@@ -178,9 +172,9 @@ void test_ym2149()
         }
       }
 
-      if((old_button_states & BTN_CHB_ENVEL) ^ (new_button_states & BTN_CHB_ENVEL))
+      if((old_button_states & BTN_CHB_ENV) ^ (new_button_states & BTN_CHB_ENV))
       {
-        if(new_button_states & BTN_CHB_ENVEL)
+        if(new_button_states & BTN_CHB_ENV)
         {
           snd_write(SND_CHB_LEVEL, SND_MAX_VOLUME_LEVEL | SND_LEVEL_MODE_ENV);
         }
@@ -190,9 +184,9 @@ void test_ym2149()
         }
       }
 
-      if((old_button_states & BTN_CHC_ENVEL) ^ (new_button_states & BTN_CHC_ENVEL))
+      if((old_button_states & BTN_CHC_ENV) ^ (new_button_states & BTN_CHC_ENV))
       {
-        if(new_button_states & BTN_CHC_ENVEL)
+        if(new_button_states & BTN_CHC_ENV)
         {
           snd_write(SND_CHC_LEVEL, SND_MAX_VOLUME_LEVEL | SND_LEVEL_MODE_ENV);
         }
@@ -296,8 +290,7 @@ void test_ym2149()
     adc_values[PORTA1] = new_adc_value;
   }
 
-  sprintf(matti, "adc arvo: %d", new_adc_value);
-  uart_send(matti);
+  UART_vsend("adc arvo: %d", new_adc_value);
 
     // int data = tune[i].note;
 

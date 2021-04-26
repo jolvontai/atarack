@@ -1,8 +1,6 @@
-#ifndef LED_DRIVER_H
-#define LED_DRIVER_H
+#ifndef STLED316S_H
+#define STLED316S_H
 
-
-#include "led_driver_config.h"
 #include <avr/io.h>
 
 // ------------------------
@@ -161,4 +159,4 @@ uint16_t ldr_get_buttons();
 
 uint8_t ldr_buttons_updated(uint16_t* new_buttons);
 
-#endif // LED_DRIVER_H
+#endif // STLED316S_H

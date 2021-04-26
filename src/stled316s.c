@@ -1,8 +1,9 @@
-#include "led_driver.h"
+#include "stled316s.h"
+#include "uart.h"
+
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "serial.h"
 
 #include <stdio.h>
 
@@ -268,13 +269,10 @@ ISR (INT0_vect)
     cli();
     _buttons_state = ldr_get_buttons();
 
-     char matti[64];
-
     // Inverse button states
     _buttons ^= _buttons_state;
 
-    sprintf(matti, "id: %d, nappulat: %d", indeksi, _buttons);
-    uart_send(matti);
+    UART_vsend("id: %d, nappulat: %d", indeksi, _buttons);
     indeksi++;
 
     _buttons_updated = 1;
