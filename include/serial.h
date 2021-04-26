@@ -14,6 +14,6 @@
 void uart_init();
 
 void uart_send(const char* szMessage);
-void uart_recv(char* buffer, int maxLen);
+void uart_vsend(const char* fmt, ...);
 
 #endif // SERIAL_H
