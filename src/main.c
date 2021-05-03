@@ -4,6 +4,7 @@
 #include "buttons.h"
 #include "stled316s.h"
 #include "adc.h"
+#include "state.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -11,30 +12,22 @@
 
 #include <stdio.h>
 
-#define USE_BUTTONS_IN_TEST 1
-
-#define ADC_CHANNELS 5
-
 void test_ym2149()
 {
   // Initialize sound chip
   snd_init();
 
+  // Initialize UART (currently only used in debugging)
   UART_init();
 
   // Initialize stled
-  ldr_init(1);
+  ldr_init();
 
   adc_init();
   
-
   sei();
 
-  // Reset sound chip registers
-  for (uint8_t i = 0; i < 16; i++)
-  {
-    snd_write(i, 0);
-  }
+
 
   // Mute noise
   snd_write(SND_IO_MIXER,
@@ -60,237 +53,85 @@ void test_ym2149()
   uint16_t delay = 0;
   uint32_t len = (sizeof(tune) / 4);
 
-  uint16_t new_button_states = 0;
+  uint16_t btn_states;
 
-  uint16_t old_button_states = 0;
+  btn_states = ldr_get_buttons();
 
-  old_button_states = ldr_get_buttons();
+  state_init(btn_states);
 
-  // DISABLE NOISE, DISABLE TONE
-  uint8_t mixer_state = 0x3F;
-
-  uint8_t envelope_mode = 0x00;
-
-  uint8_t envelope_changed = 0;
-
-  uint16_t adc_values[ADC_CHANNELS];
+  uint16_t adc_values[5];
 
   while (1)
   {
-    // if (delay > tune[i].delay)
-    // {
-    //   i = (i + 1) % len;
-    //   delay = 0;
-    // }
-#if(USE_BUTTONS_IN_TEST)
-    if(ldr_buttons_updated(&new_button_states))
+    if (delay > tune[i].delay)
     {
-      uint8_t discreet_leds = (new_button_states & 0xFF);
-      uint8_t dig_leds = (new_button_states >> 8);
-      // if state is changed
-      if((old_button_states & BTN_CHA_ENABLE) ^ (new_button_states & BTN_CHA_ENABLE))
-      {
-        if(new_button_states & BTN_CHA_ENABLE)
-        {
-          mixer_state &= ~SND_MIXER_CHA_MUTE_TONE;
-        }
-        else
-        {
-          mixer_state |= SND_MIXER_CHA_MUTE_TONE;
-        }
-      }
-
-      if((old_button_states & BTN_CHB_ENABLE) ^ (new_button_states & BTN_CHB_ENABLE))
-      {
-        if(new_button_states & BTN_CHB_ENABLE)
-        {
-          mixer_state &= ~SND_MIXER_CHB_MUTE_TONE;
-        }
-        else
-        {
-          mixer_state |= SND_MIXER_CHB_MUTE_TONE;
-        }
-      }
-
-      if((old_button_states & BTN_CHC_ENABLE) ^ (new_button_states & BTN_CHC_ENABLE))
-      {
-        if(new_button_states & BTN_CHC_ENABLE)
-        {
-          mixer_state &= ~SND_MIXER_CHC_MUTE_TONE;
-        }
-        else
-        {
-          mixer_state |= SND_MIXER_CHC_MUTE_TONE;
-        }
-      }
-
-      if((old_button_states & BTN_CHA_NOISE) ^ (new_button_states & BTN_CHA_NOISE))
-      {
-        if(new_button_states & BTN_CHA_NOISE)
-        {
-          mixer_state &= ~SND_MIXER_CHA_MUTE_NOISE;
-        }
-        else
-        {
-          mixer_state |= SND_MIXER_CHA_MUTE_NOISE;
-        }
-      }
-
-      if((old_button_states & BTN_CHB_NOISE) ^ (new_button_states & BTN_CHB_NOISE))
-      {
-        if(new_button_states & BTN_CHB_NOISE)
-        {
-          mixer_state &= ~SND_MIXER_CHB_MUTE_NOISE;
-        }
-        else
-        {
-          mixer_state |= SND_MIXER_CHB_MUTE_NOISE;
-        }
-      }
-
-      if((old_button_states & BTN_CHC_NOISE) ^ (new_button_states & BTN_CHC_NOISE))
-      {
-        if(new_button_states & BTN_CHC_NOISE)
-        {
-          mixer_state &= ~SND_MIXER_CHC_MUTE_NOISE;
-        }
-        else
-        {
-          mixer_state |= SND_MIXER_CHC_MUTE_NOISE;
-        }
-      }
-
-      if((old_button_states & BTN_CHA_ENV) ^ (new_button_states & BTN_CHA_ENV))
-      {
-        if(new_button_states & BTN_CHA_ENV)
-        {
-          snd_write(SND_CHA_LEVEL, SND_MAX_VOLUME_LEVEL | SND_LEVEL_MODE_ENV);
-        }
-        else
-        {
-          snd_write(SND_CHA_LEVEL, SND_MAX_VOLUME_LEVEL);
-        }
-      }
-
-      if((old_button_states & BTN_CHB_ENV) ^ (new_button_states & BTN_CHB_ENV))
-      {
-        if(new_button_states & BTN_CHB_ENV)
-        {
-          snd_write(SND_CHB_LEVEL, SND_MAX_VOLUME_LEVEL | SND_LEVEL_MODE_ENV);
-        }
-        else
-        {
-          snd_write(SND_CHB_LEVEL, SND_MAX_VOLUME_LEVEL);
-        }
-      }
-
-      if((old_button_states & BTN_CHC_ENV) ^ (new_button_states & BTN_CHC_ENV))
-      {
-        if(new_button_states & BTN_CHC_ENV)
-        {
-          snd_write(SND_CHC_LEVEL, SND_MAX_VOLUME_LEVEL | SND_LEVEL_MODE_ENV);
-        }
-        else
-        {
-          snd_write(SND_CHC_LEVEL, SND_MAX_VOLUME_LEVEL);
-        }
-      }
-
-      if((old_button_states & BTN_ENV_CONT) ^ (new_button_states & BTN_ENV_CONT))
-      {
-        if(new_button_states & BTN_ENV_CONT)
-        {
-          envelope_mode |= SND_ENV_SHAPE_CONT;
-        }
-        else
-        {
-          envelope_mode &= ~SND_ENV_SHAPE_CONT;
-        }
-        envelope_changed = 1;
-      }
-
-      if((old_button_states & BTN_ENV_ATT) ^ (new_button_states & BTN_ENV_ATT))
-      {
-        if(new_button_states & BTN_ENV_ATT)
-        {
-          envelope_mode |= SND_ENV_SHAPE_ATT;
-        }
-        else
-        {
-          envelope_mode &= ~SND_ENV_SHAPE_ATT;
-        }
-        envelope_changed = 1;
-      }
-
-      if((old_button_states & BTN_ENV_ALT) ^ (new_button_states & BTN_ENV_ALT))
-      {
-        if(new_button_states & BTN_ENV_ALT)
-        {
-          envelope_mode |= SND_ENV_SHAPE_ALT;
-        }
-        else
-        {
-          envelope_mode &= ~SND_ENV_SHAPE_ALT;
-        }
-        envelope_changed = 1;
-      }
-
-      if((old_button_states & BTN_ENV_HOLD) ^ (new_button_states & BTN_ENV_HOLD))
-      {
-        if(new_button_states & BTN_ENV_HOLD)
-        {
-          envelope_mode |= SND_ENV_SHAPE_HOLD;
-        }
-        else
-        {
-          envelope_mode &= ~SND_ENV_SHAPE_HOLD;
-        }
-        envelope_changed = 1;
-      }
-
-      snd_write(SND_IO_MIXER, mixer_state);
-
-      if(envelope_changed)
-      {
-        envelope_changed = 0;
-        snd_write(SND_ENV_SHAPE, envelope_mode);
-      }
-     
-
-      ldr_set_discreet_leds(discreet_leds);
-      ldr_set_dig_leds(dig_leds, 0);
-
-      old_button_states = new_button_states;
+      i = (i + 1) % len;
+      delay = 0;
     }
-    
-#endif
 
+    if(ldr_buttons_updated(&btn_states))
+    {
+      // Next led states
+      uint8_t discreet_leds = (btn_states & 0xFF); // next discreet leds
+      uint8_t dig_leds = (btn_states >> 8); // next dig leds
 
-  uint16_t new_adc_value = 0;
+      uint8_t new_state;
 
-  new_adc_value = adc_read_pin(PORTA0);
+      if(state_mixer_changed(btn_states, &new_state))
+      {
+        snd_write(SND_IO_MIXER, new_state);
+      }
 
-  if(new_adc_value != adc_values[PORTA0])
-  {
-    snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
-    snd_write(SND_CHA_ROUGH_TONE, (new_adc_value >> 8));
+      if(state_env_changed(btn_states, &new_state))
+      {
+        snd_write(SND_ENV_SHAPE, new_state);
+      }
 
-    adc_values[PORTA0] = new_adc_value;
-  }
+      if(state_cha_changed(btn_states, &new_state))
+      {
+        snd_write(SND_CHA_LEVEL, new_state);
+      }
 
-  _delay_us(250);
+      if(state_chb_changed(btn_states, &new_state))
+      {
+        snd_write(SND_CHB_LEVEL, new_state);
+      }
 
-  new_adc_value = adc_read_pin(PORTA1);
+      if(state_chc_changed(btn_states, &new_state))
+      {
+        snd_write(SND_CHC_LEVEL, new_state);
+      }
 
-  if(new_adc_value != adc_values[PORTA1])
-  {
-    snd_write(SND_CHB_FINE_TONE, new_adc_value & 0xFF);
-    snd_write(SND_CHB_ROUGH_TONE, (new_adc_value >> 8));
+      // Update ui
+      ldr_set_discreet_leds(discreet_leds); // Update discreet leds
+      ldr_set_dig_leds(dig_leds, 0); // Update dig leds
+    }
 
-    adc_values[PORTA1] = new_adc_value;
-  }
+   uint16_t new_adc_value = 0;
 
-  UART_vsend("adc arvo: %d", new_adc_value);
+  // new_adc_value = adc_read_pin(PORTA0);
+
+  // if(new_adc_value != adc_values[PORTA0])
+  // {
+  //   snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
+  //   snd_write(SND_CHA_ROUGH_TONE, (new_adc_value >> 8));
+
+  //   adc_values[PORTA0] = new_adc_value;
+  // }
+
+  // _delay_us(250);
+
+   //new_adc_value = adc_read_pin(PORTA1);
+
+  // if(new_adc_value != adc_values[PORTA1])
+  // {
+  //   snd_write(SND_CHB_FINE_TONE, new_adc_value & 0xFF);
+  //   snd_write(SND_CHB_ROUGH_TONE, (new_adc_value >> 8));
+
+  //   adc_values[PORTA1] = new_adc_value;
+  // }
+
+  //UART_vsend("adc arvo: %d", new_adc_value);
 
     // int data = tune[i].note;
 
