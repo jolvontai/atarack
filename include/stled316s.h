@@ -135,11 +135,15 @@
 #define LDR_FULL_POWER 0xE0
 #endif
 
+#ifndef LDR_DIG_COUNT
+#define LDR_DIG_COUNT 1
+#endif
+
 // ---------
 // Functions
 // ---------
 
-void ldr_init(int digits);
+void ldr_init(void);
 
 void ldr_send_data(uint8_t* data, uint8_t length);
 
