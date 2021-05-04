@@ -1,5 +1,4 @@
 #include "adc.h"
-#include "util.h"
 #include "uart.h"
 #include <avr/interrupt.h>
 
@@ -73,18 +72,12 @@ uint16_t adc_read_pin(uint8_t pin)
         _started = 1;
     }
 
-    UART_vsend("kanava 1: %d, kanava 2: %d, kanava 3: %d, kanava 4: %d, kanava 5: %d", 
-        _channel_data[0].value,
-        _channel_data[1].value,
-        _channel_data[2].value,
-        _channel_data[3].value,
-        _channel_data[4].value);
-
-    //ADMUX = _BV(REFS0) | (pin & 0x07);
-
-    //ADCSRA |= _BV(ADSC);
-
-    //while(ADCSRA & _BV(ADSC));
+    // UART_vsend("kanava 1: %d, kanava 2: %d, kanava 3: %d, kanava 4: %d, kanava 5: %d", 
+    //     _channel_data[0].value,
+    //     _channel_data[1].value,
+    //     _channel_data[2].value,
+    //     _channel_data[3].value,
+    //     _channel_data[4].value);
 
     return _channel_data[pin].value;
 }
@@ -95,7 +88,6 @@ ISR (ADC_vect)
     uint16_t adc_value;
     adc_value = ADC;
 
-    // Map the adc value to 12-bit value from 10-bit
     _channel_data[_current_index].value = adc_value;//map(adc_value, 0, 0x3FF,0, 0xFFF); 
 
     // Increment index
