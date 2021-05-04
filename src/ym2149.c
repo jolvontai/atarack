@@ -34,6 +34,12 @@ void snd_init()
     // BUS CONTROL
     DDRB |= (1 << PORTB1); // BDIR out
     DDRB |= (1 << PORTB0); // BC1 out
+
+    // Reset sound chip registers
+    for (uint8_t i = 0; i < 16; i++)
+    {
+        snd_write(i, 0);
+    }
 }
 
 void snd_write(uint8_t reg, uint8_t value)
