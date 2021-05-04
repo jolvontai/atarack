@@ -40,6 +40,10 @@ void snd_init()
     {
         snd_write(i, 0);
     }
+
+    // Mute noise
+    snd_write(SND_IO_MIXER,
+            SND_MIXER_CHC_MUTE_NOISE | SND_MIXER_CHB_MUTE_NOISE | SND_MIXER_CHA_MUTE_NOISE);
 }
 
 void snd_write(uint8_t reg, uint8_t value)

@@ -5,6 +5,7 @@
 #include "stled316s.h"
 #include "adc.h"
 #include "state.h"
+#include "util.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -12,6 +13,18 @@
 
 #include <stdio.h>
 
+typedef struct
+{
+  uint8_t mixer_state;
+  uint8_t envelope_state;
+  uint8_t cha_state;
+  uint8_t chb_state;
+  uint8_t chc_state;
+} current_states;
+
+#define RICK_ROLL 0
+
+#if(RICK_ROLL)
 void test_ym2149()
 {
   // Initialize sound chip
@@ -27,17 +40,11 @@ void test_ym2149()
   
   sei();
 
+  //snd_write(SND_ENV_SHAPE, SND_ENV_SHAPE_CONT | SND_ENV_SHAPE_ALT);
 
+  //snd_write(SND_ENV_FINE_TONE, 0x1F);
 
-  // Mute noise
-  snd_write(SND_IO_MIXER,
-            SND_MIXER_CHC_MUTE_NOISE | SND_MIXER_CHB_MUTE_NOISE | SND_MIXER_CHA_MUTE_NOISE);
-
-  snd_write(SND_ENV_SHAPE, SND_ENV_SHAPE_CONT | SND_ENV_SHAPE_ALT);
-
-  snd_write(SND_ENV_FINE_TONE, 0x1F);
-
-  snd_write(SND_ENV_ROUGH_TONE, 0x1F);
+  //snd_write(SND_ENV_ROUGH_TONE, 0x1F);
 
   // Full blast
   snd_write(SND_CHA_LEVEL, 0xF);
@@ -79,6 +86,7 @@ void test_ym2149()
 
       if(state_mixer_changed(btn_states, &new_state))
       {
+        UART_vsend("ny kirjotetaa mixerii");
         snd_write(SND_IO_MIXER, new_state);
       }
 
@@ -109,7 +117,7 @@ void test_ym2149()
 
    uint16_t new_adc_value = 0;
 
-  // new_adc_value = adc_read_pin(PORTA0);
+  new_adc_value = adc_read_pin(PORTA0);
 
   // if(new_adc_value != adc_values[PORTA0])
   // {
@@ -133,24 +141,166 @@ void test_ym2149()
 
   //UART_vsend("adc arvo: %d", new_adc_value);
 
-    // int data = tune[i].note;
+    int data = tune[i].note;
 
-    // snd_write(SND_CHA_FINE_TONE, data & 0xff);
-    // snd_write(SND_CHA_ROUGH_TONE, data >> 8);
+    snd_write(SND_CHA_FINE_TONE, data & 0xff);
+    snd_write(SND_CHA_ROUGH_TONE, data >> 8);
 
-    // snd_write(SND_CHB_FINE_TONE, data & 0xff);
-    // snd_write(SND_CHB_ROUGH_TONE, data >> 8);
+    snd_write(SND_CHB_FINE_TONE, data & 0xff);
+    snd_write(SND_CHB_ROUGH_TONE, data >> 8);
 
-    // snd_write(SND_CHC_FINE_TONE, data & 0xff);
-    // snd_write(SND_CHC_ROUGH_TONE, data >> 8);
+    snd_write(SND_CHC_FINE_TONE, data & 0xff);
+    snd_write(SND_CHC_ROUGH_TONE, data >> 8);
 
-    // delay += 50;
-    // _delay_ms(50);
+    delay += 50;
+    _delay_ms(50);
+  }
+}
+#endif
+
+void run_atarack(void)
+{
+    // Initialize sound chip
+  snd_init();
+
+  // Initialize UART (currently only used in debugging)
+  UART_init();
+
+  // Initialize stled
+  ldr_init();
+
+  // Initialize adc 
+  adc_init();
+  
+  // Enable interrupts
+  sei();
+
+  // Full blast
+  snd_write(SND_CHA_LEVEL, 0xF);
+  snd_write(SND_CHB_LEVEL, 0xF);
+  snd_write(SND_CHC_LEVEL, 0xF);
+
+  // Initialize state machine
+  uint16_t btn_states = ldr_get_buttons();
+  state_init(btn_states);
+
+  // Local holder for current states
+  current_states states;
+
+  // Fill the states with starting values
+  state_mixer_changed(btn_states, &states.mixer_state);
+  state_cha_changed(btn_states, &states.cha_state);
+  state_chb_changed(btn_states, &states.chb_state);
+  state_chc_changed(btn_states, &states.chc_state);
+  state_env_changed(btn_states, &states.envelope_state);
+
+  // ADC value helper
+  uint16_t new_adc_value = 0;
+
+  while (1)
+  {
+    if(ldr_buttons_updated(&btn_states))
+    {
+      // Next led states
+      uint8_t discreet_leds = (btn_states & 0xFF); // Next discreet leds
+      uint8_t dig_leds = (btn_states >> 8); // Next dig leds
+
+      // Check mixer buttons (channel enables, noise enables)
+      if(state_mixer_changed(btn_states, &states.mixer_state))
+      {
+        snd_write(SND_IO_MIXER, states.mixer_state);
+      }
+
+      // Check envelope buttons (ATT, ALT, CONT...)
+      if(state_env_changed(btn_states, &states.envelope_state))
+      {
+        snd_write(SND_ENV_SHAPE, states.envelope_state);
+      }
+
+      // Check channel A envelope enabled
+      if(state_cha_changed(btn_states, &states.cha_state))
+      {
+        snd_write(SND_CHA_LEVEL, states.cha_state);
+      }
+
+      // Check channel B envelope enabled
+      if(state_chb_changed(btn_states, &states.chb_state))
+      {
+        snd_write(SND_CHB_LEVEL, states.chb_state);
+      }
+
+      // Check channel C envelope enabled
+      if(state_chc_changed(btn_states, &states.chc_state))
+      {
+        snd_write(SND_CHC_LEVEL, states.chc_state);
+      }
+
+      // Update the old reference button now that we've compared all states
+      state_update_old_buttons(btn_states);
+
+      // Update ui
+      ldr_set_discreet_leds(discreet_leds); // Update discreet leds
+      ldr_set_dig_leds(dig_leds, 0); // Update dig leds
+
+      UART_vsend("mixeri: %d, enve: %d, cha: %d, chb: %d, chc: %d",
+        states.mixer_state,
+        states.envelope_state,
+        states.cha_state,
+        states.chb_state,
+        states.chc_state);
+    }
+
+    // CHA TONE enabled
+    if((states.mixer_state & SND_MIXER_CHA_MUTE_TONE) == 0)
+    {
+      new_adc_value = adc_read_pin(PORTA1);
+      snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
+      snd_write(SND_CHA_ROUGH_TONE, ((new_adc_value >> 8) & 0xF));
+      
+    }
+
+    // CHB TONE enabled
+    if((states.mixer_state & SND_MIXER_CHB_MUTE_TONE) == 0)
+    {
+      new_adc_value = adc_read_pin(PORTA2);
+      snd_write(SND_CHB_FINE_TONE, new_adc_value & 0xFF);
+      snd_write(SND_CHB_ROUGH_TONE, ((new_adc_value >> 8) & 0xF));
+    }
+
+    // CHC TONE enabled
+    if((states.mixer_state & SND_MIXER_CHC_MUTE_TONE) == 0)
+    {
+      new_adc_value = adc_read_pin(PORTA3);
+      snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
+      snd_write(SND_CHA_ROUGH_TONE, ((new_adc_value >> 8) & 0xF));
+    }
+
+    // Noise enabled if it is enabled in any of the channels
+    if((states.mixer_state & SND_MASK_MIXER_NOISE) != SND_MASK_MIXER_NOISE)
+    {
+      new_adc_value = adc_read_pin(PORTA4);
+      uint8_t freq_value = map(new_adc_value, 0, 0x3FF, 0, 0x1F); // Map the 10-bit value to 5-bit
+      snd_write(SND_NOISE_FREQ, freq_value & 0x1F);
+    }
+
+    // Update envelope only if it is enabled on any of the channels
+    if((states.cha_state & SND_LEVEL_MODE_ENV) | (states.chb_state & SND_LEVEL_MODE_ENV) | (states.chc_state & SND_LEVEL_MODE_ENV))
+    {
+      new_adc_value = adc_read_pin(PORTA0);
+      uint16_t freq_value = map(new_adc_value, 0, 0x3FF, 0, 0xFFFF); // Map the 10-bit value to 16-bit
+      snd_write(SND_ENV_FINE_TONE, freq_value & 0xFF);
+      snd_write(SND_ENV_ROUGH_TONE, (freq_value >> 8));
+    }
   }
 }
 
 int main(void)
 {
+#if(RICK_ROLL)
   test_ym2149();
+#else
+  run_atarack();
+#endif
+
   return 0;
 }
