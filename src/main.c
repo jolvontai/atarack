@@ -307,8 +307,8 @@ void run_atarack(void)
       //   MAX_TONE_FREQ);
 
       // Write 12 bits
-      snd_write(SND_CHA_FINE_TONE, new_snd_value & 0xFF);
-      snd_write(SND_CHA_ROUGH_TONE, ((new_snd_value >> 8) & 0xF));
+      snd_write(SND_CHC_FINE_TONE, new_snd_value & 0xFF);
+      snd_write(SND_CHC_ROUGH_TONE, ((new_snd_value >> 8) & 0xF));
     }
 
     // Noise enabled if it is enabled in any of the channels
