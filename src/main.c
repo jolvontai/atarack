@@ -254,14 +254,14 @@ void run_atarack(void)
     if((states.mixer_state & SND_MIXER_CHA_MUTE_TONE) == 0)
     {
       // Read the adc value
-      new_adc_value = adc_read_pin(PORTA1) + 1;
+      new_adc_value = adc_read_pin(ADC_CHA_PORT);
 
       // Get the tone value from the adc value
       new_snd_value = convert_adc_to_tone(new_adc_value);
 
       // UART_vsend("adc value: %d, CHA value: %d, min tone: %f, max tone: %f", 
       //   new_adc_value, 
-      //   new_freq_value,
+      //   new_snd_value,
       //   MIN_TONE_FREQ,
       //   MAX_TONE_FREQ);
 
@@ -275,14 +275,14 @@ void run_atarack(void)
     if((states.mixer_state & SND_MIXER_CHB_MUTE_TONE) == 0)
     {
       // Read the adc value
-      new_adc_value = adc_read_pin(PORTA2);
+      new_adc_value = adc_read_pin(ADC_CHB_PORT);
 
       // Get the tone value from the adc value
       new_snd_value = convert_adc_to_tone(new_adc_value);
 
       // UART_vsend("adc value: %d, CHB value: %d, min tone: %f, max tone: %f", 
       //   new_adc_value, 
-      //   new_freq_value,
+      //   new_snd_value,
       //   MIN_TONE_FREQ,
       //   MAX_TONE_FREQ);
 
@@ -295,14 +295,14 @@ void run_atarack(void)
     if((states.mixer_state & SND_MIXER_CHC_MUTE_TONE) == 0)
     {
       // Read the adc value
-      new_adc_value = adc_read_pin(PORTA3);
+      new_adc_value = adc_read_pin(ADC_CHC_PORT);
 
       // Get the tone value from the adc value
       new_snd_value = convert_adc_to_tone(new_adc_value);
 
       // UART_vsend("adc value: %d, CHC value: %d, min tone: %f, max tone: %f", 
       //   new_adc_value, 
-      //   new_freq_value,
+      //   new_snd_value,
       //   MIN_TONE_FREQ,
       //   MAX_TONE_FREQ);
 
@@ -315,14 +315,14 @@ void run_atarack(void)
     if((states.mixer_state & SND_MASK_MIXER_NOISE) != SND_MASK_MIXER_NOISE)
     {
       // Read the adc value
-      new_adc_value = adc_read_pin(PORTA4);
+      new_adc_value = adc_read_pin(ADC_NOISE_PORT);
 
       // Get the noise value from the adc value
       new_snd_value = convert_adc_to_noise(new_adc_value);
 
       // UART_vsend("adc value: %d, noise value: %d, min noise: %f, max noise: %f", 
       //   new_adc_value, 
-      //   new_freq_value,
+      //   new_snd_value,
       //   MIN_ENV_FREQ,
       //   MIN_ENV_FREQ);
 
@@ -334,16 +334,16 @@ void run_atarack(void)
     if((states.cha_state & SND_LEVEL_MODE_ENV) | (states.chb_state & SND_LEVEL_MODE_ENV) | (states.chc_state & SND_LEVEL_MODE_ENV))
     {
       // Read the adc value
-      new_adc_value = adc_read_pin(PORTA0);
-
-      // UART_vsend("adc value: %d, ENV value: %d, min env: %f, max env: %f", 
-      //   new_adc_value, 
-      //   new_freq_value,
-      //   MIN_ENV_FREQ,
-      //   MIN_ENV_FREQ);
+      new_adc_value = adc_read_pin(ADC_ENV_PORT);
 
       // Get the envelope value from the adc value
       new_snd_value = convert_adc_to_envelope(new_adc_value);
+
+      // UART_vsend("adc value: %d, ENV value: %d, min env: %f, max env: %f", 
+      //   new_adc_value, 
+      //   new_snd_value,
+      //   MIN_ENV_FREQ,
+      //   MIN_ENV_FREQ);
 
       // Write 16 bits
       snd_write(SND_ENV_FINE_TONE, new_snd_value & 0xFF);

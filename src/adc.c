@@ -6,11 +6,11 @@
     PIN configuration:
     AVR                        UI
     ----+---------+--------------
-    A0    <----->     ENV CV (J5)
+    A0    <----->   NOISE CV (J4)
     A1    <----->     CHA CV (J1)
     A2    <----->     CHB CV (J2)
     A3    <----->     CHC CV (J3)
-    A4    <----->   NOISE Cv (J4)  
+    A4    <----->     ENV CV (J5)  
 */
 
 typedef struct 
