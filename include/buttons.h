@@ -17,9 +17,9 @@
 #define BTN_CHC_ENV   (1<<11)
 
 // Envelope
-#define BTN_ENV_CONT    (1<<14)          
-#define BTN_ENV_ATT     (1<<10)
-#define BTN_ENV_ALT     (1<<9)
-#define BTN_ENV_HOLD    (1<<8)
+#define BTN_ENV_HOLD    (1<<14)          
+#define BTN_ENV_ALT     (1<<10)
+#define BTN_ENV_ATT     (1<<9)
+#define BTN_ENV_CONT    (1<<8)
 
 #endif // BUTTONS_H
