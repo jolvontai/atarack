@@ -1,6 +1,6 @@
-#include "adc.h"
-#include "uart.h"
 #include <avr/interrupt.h>
+
+#include "adc.h"
 
 /*
     PIN configuration:
@@ -19,17 +19,19 @@ typedef struct
     //uint8_t enabled; // TODO enable this if deemed necessary
 } adc_channel;
 
+// holds the read data
 volatile adc_channel _channel_data[5];
 
+// Flag to allow the setting of the ADSC once later
 uint8_t _started = 0;
 
 void adc_init()
 {
     // AVCC ref 
-    ADMUX = _BV(REFS0);
+    ADMUX = (1 << REFS0);
 
     // 128 prescaler, 
-    ADCSRA = _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);
+    ADCSRA = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
 
     // Disable input (A0-A4)
     DDRA &= 0xE0;
@@ -45,39 +47,30 @@ void adc_init()
     }
 
     // Enable auto-trigger and interrupt
-    ADCSRA |= _BV(ADATE) | _BV(ADIE);
+    ADCSRA |= (1 << ADATE) | (1 << ADIE);
 
     // Enable adc
-    ADCSRA |= _BV(ADEN);
-
-    // Flag to allow the setting of the ADSC once later
-    _started = 0;
+    ADCSRA |= (1 << ADEN);
 }
 
-void adc_set_channel_state(uint8_t channel, uint8_t enabled)
-{
-    // if(enabled && bit_is_clear(ADCSRA, ADSC))
-    // {
-    //     ADCSRA |= _BV(ADSC);
-    // }
+// void adc_set_channel_state(uint8_t channel, uint8_t enabled)
+// {
+//     // if(enabled && bit_is_clear(ADCSRA, ADSC))
+//     // {
+//     //     ADCSRA |= _BV(ADSC);
+//     // }
     
-   // _channel_data[channel].enabled = enabled;
-}
+//    // _channel_data[channel].enabled = enabled;
+// }
 
 uint16_t adc_read_pin(uint8_t pin)
 {
     if(_started == 0)
     {
-        ADCSRA |= _BV(ADSC);
+        // start conversions if hasn't been started yet
+        ADCSRA |= (1 << ADSC);
         _started = 1;
     }
-
-    // UART_vsend("kanava 1: %d, kanava 2: %d, kanava 3: %d, kanava 4: %d, kanava 5: %d", 
-    //     _channel_data[0].value,
-    //     _channel_data[1].value,
-    //     _channel_data[2].value,
-    //     _channel_data[3].value,
-    //     _channel_data[4].value);
 
     return _channel_data[pin].value;
 }
@@ -86,9 +79,12 @@ uint8_t _current_index = 0;
 ISR (ADC_vect)
 {
     uint16_t adc_value;
-    adc_value = ADC;
 
-    _channel_data[_current_index].value = adc_value;//map(adc_value, 0, 0x3FF,0, 0xFFF); 
+    // Read conversion result
+    adc_value = ADC; 
+
+    // Store to channel data
+    _channel_data[_current_index].value = adc_value;
 
     // Increment index
     _current_index++;
@@ -100,5 +96,5 @@ ISR (ADC_vect)
     }
 
     // Change channel
-    ADMUX = _BV(REFS0) | (_current_index & 0x07);
+    ADMUX = (1 << REFS0) | (_current_index & 0x07);
 }

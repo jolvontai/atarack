@@ -1,3 +1,7 @@
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdio.h>
+
 #include "ym2149.h"
 #include "notes.h"
 #include "uart.h"
@@ -6,12 +10,6 @@
 #include "adc.h"
 #include "state.h"
 #include "util.h"
-
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-
-#include <stdio.h>
 
 typedef struct
 {
@@ -175,10 +173,10 @@ void run_atarack(void)
   // Enable interrupts
   sei();
 
-  // Full blast
-  snd_write(SND_CHA_LEVEL, 0xF);
-  snd_write(SND_CHB_LEVEL, 0xF);
-  snd_write(SND_CHC_LEVEL, 0xF);
+  // Set channel volumes
+  snd_write(SND_CHA_LEVEL, CHANNEL_VOLUME);
+  snd_write(SND_CHB_LEVEL, CHANNEL_VOLUME);
+  snd_write(SND_CHC_LEVEL, CHANNEL_VOLUME);
 
   // Get the state of buttons
   uint16_t btn_states = ldr_get_buttons();

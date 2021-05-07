@@ -10,7 +10,6 @@
 #include <inttypes.h>
 #include <math.h>
 
-#include "uart.h"
 #include "config.h"
 
 // Map value to range

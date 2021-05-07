@@ -1,3 +1,9 @@
+/*  config.h
+
+    Summary:
+    Definitions for Communication with stled316s chip
+*/
+
 #ifndef STLED316S_H
 #define STLED316S_H
 

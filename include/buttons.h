@@ -1,3 +1,9 @@
+/*  buttons.h
+
+    Summary:
+    contains the UI button mapping
+*/
+
 #ifndef BUTTONS_H
 #define BUTTONS_H
 

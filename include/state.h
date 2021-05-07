@@ -1,3 +1,9 @@
+/*  state.h
+
+    Summary:
+    Used to keep track of states of the soundchip
+*/
+
 #ifndef STATE_H
 #define STATE_H
 

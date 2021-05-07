@@ -7,7 +7,7 @@
 #ifndef UART_H
 #define UART_H
 
-#include "uart_config.h"
+#include "config.h"
 
 #include <inttypes.h>
 

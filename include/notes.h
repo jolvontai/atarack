@@ -1,5 +1,15 @@
+/*  notes.h
+
+    Summary:
+    Collection of compiletime generated notes and useful macros to calculate soundchip register value from frequency
+*/
+
 #ifndef NOTES_H
 #define NOTES_H
+
+#include <inttypes.h>
+
+#include "ym2149.h"
 
 #ifndef F_SND
 #error "F_SND not defined"

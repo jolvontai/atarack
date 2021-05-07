@@ -1,11 +1,10 @@
-#include "stled316s.h"
-#include "uart.h"
-
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-
 #include <stdio.h>
+
+#include "stled316s.h"
+#include "config.h"
 
 volatile uint16_t _buttons;
 
@@ -13,7 +12,6 @@ volatile uint8_t _buttons_updated = 0;
 
 void ldr_init()
 {
-
     // Reset buttons
     _buttons = 0;
 
@@ -23,26 +21,26 @@ void ldr_init()
     // Set as input
     DDRD |= (1<<PORTD2);
 
-    // enable pullup
+    // Enable pullup
     PORTD |= (1<<PORTD2) | (1<<PORTD3);
 
-    // set din, clk, and stb to output
+    // Set din, clk, and stb to output
     DDRB |= (1<<LDR_DIN) | (1<<LDR_CLK);
     DDRD |= (1 << LDR_STB);
     
-    // set data default to 0
+    // Set data default to 0
     PORTB &= ~(_BV(LDR_DIN));
 
-    // set clk default to 1
+    // Set clk default to 1
     PORTB |= _BV(LDR_CLK);
 
-    // set stb default to 1
+    // Set stb default to 1
     LDR_STB_REG |= _BV(LDR_STB);
 
-    ldr_set_discreet_leds(0);
-    ldr_set_dig_leds(0, 0);
-    ldr_set_dig_brightness(7);
-    ldr_set_display_state(1);
+    ldr_set_discreet_leds(0);   // Turn off discreet leds
+    ldr_set_dig_leds(0, 0);     // Tur off dig 0 leds
+    ldr_set_dig_brightness(LED_BRIGHTNESS);  // Set brightness
+    ldr_set_display_state(1);   // Turn on display
 }
 
 void _ldr_send_byte(uint8_t data)
@@ -53,7 +51,7 @@ void _ldr_send_byte(uint8_t data)
     {
         // Write 1
         if(data & (1<<i))
-        {cli();
+        {
             LDR_DIN_REG |= (1<<LDR_DIN);
         }
         else // write 0
@@ -262,8 +260,6 @@ uint8_t ldr_buttons_updated(uint16_t* new_buttons)
     _buttons_updated = 0;
 
     *new_buttons = _buttons;
-
-    UART_vsend("nappulat: %d", _buttons);
 
     return 1;
 }

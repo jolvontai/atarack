@@ -10,6 +10,12 @@
 #include <math.h>
 #include "notes.h"
 
+// override by defining before this
+// else use monitor speed defined in the project settings
+#ifndef BAUD
+#define BAUD _UART_BAUD
+#endif
+
 // voltage range is (0-5) so change of 5 octaves
 #define OCTAVES 5
 
@@ -36,5 +42,11 @@
 
 // Smallest possible frequency for noise (around 16.07hz)
 #define MIN_NOISE_FREQ  F_SND / 16.0 / 7777.0
+
+// Channel volume (range: 0-15)
+#define CHANNEL_VOLUME 0xF
+
+// Led brightness (range: 0-7)
+#define LED_BRIGHTNESS 7
 
 #endif //CONFIG_H

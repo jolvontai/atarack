@@ -1,3 +1,9 @@
+/*  ym2149.h
+
+    Summary:
+    Definitions for communication with ym2149 soundchip
+*/
+
 #ifndef YM2149_H
 #define YM2149_H
 

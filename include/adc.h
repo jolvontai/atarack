@@ -1,3 +1,9 @@
+/*  adc.h
+
+    Summary:
+    Definitions for usage of adc
+*/
+
 #ifndef ADC_H
 #define ADC_H
 
@@ -5,7 +11,7 @@
 
 void adc_init();
 
-void adc_set_channel_state(uint8_t channel, uint8_t enabled);
+//void adc_set_channel_state(uint8_t channel, uint8_t enabled);
 
 uint16_t adc_read_pin(uint8_t pin);
 
