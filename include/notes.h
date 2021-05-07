@@ -11,7 +11,11 @@ typedef struct
     uint16_t delay;
 } Note;
 
+// Calculator for channel frequency
 #define TONE(hz) (F_SND / (16.0 * hz))
+
+// Calculator for envelope frequency
+#define ENVELOPE(hz) (F_SND / (256.0 * hz))
 
 #define C0 TONE(16.35)
 #define Db0 TONE(17.32)

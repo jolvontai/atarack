@@ -197,6 +197,9 @@ void run_atarack(void)
   // ADC value helper
   uint16_t new_adc_value = 0;
 
+  // Soundchip value helper
+  uint16_t new_snd_value = 0;
+
   while (1)
   {
     if(ldr_buttons_updated(&btn_states))
@@ -242,54 +245,108 @@ void run_atarack(void)
       ldr_set_discreet_leds(discreet_leds); // Update discreet leds
       ldr_set_dig_leds(dig_leds, 0); // Update dig leds
 
-      UART_vsend("mixeri: %d, enve: %d, cha: %d, chb: %d, chc: %d",
-        states.mixer_state,
-        states.envelope_state,
-        states.cha_state,
-        states.chb_state,
-        states.chc_state);
+      // UART_vsend("mixer: %d, envelope: %d, CHA: %d, CHB: %d, CHC: %d",
+      //   states.mixer_state,
+      //   states.envelope_state,
+      //   states.cha_state,
+      //   states.chb_state,
+      //   states.chc_state);
     }
 
     // CHA TONE enabled
     if((states.mixer_state & SND_MIXER_CHA_MUTE_TONE) == 0)
     {
-      new_adc_value = adc_read_pin(PORTA1);
-      snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
-      snd_write(SND_CHA_ROUGH_TONE, ((new_adc_value >> 8) & 0xF));
+      // Read the adc value
+      new_adc_value = adc_read_pin(PORTA1) + 1;
+
+      // Get the tone value from the adc value
+      new_snd_value = convert_adc_to_tone(new_adc_value);
+
+      // UART_vsend("adc value: %d, CHA value: %d, min tone: %f, max tone: %f", 
+      //   new_adc_value, 
+      //   new_freq_value,
+      //   MIN_TONE_FREQ,
+      //   MAX_TONE_FREQ);
+
+      // Write 12 bits
+      snd_write(SND_CHA_FINE_TONE, new_snd_value & 0xFF);
+      snd_write(SND_CHA_ROUGH_TONE, ((new_snd_value >> 8) & 0xF));
       
     }
 
     // CHB TONE enabled
     if((states.mixer_state & SND_MIXER_CHB_MUTE_TONE) == 0)
     {
+      // Read the adc value
       new_adc_value = adc_read_pin(PORTA2);
-      snd_write(SND_CHB_FINE_TONE, new_adc_value & 0xFF);
-      snd_write(SND_CHB_ROUGH_TONE, ((new_adc_value >> 8) & 0xF));
+
+      // Get the tone value from the adc value
+      new_snd_value = convert_adc_to_tone(new_adc_value);
+
+      // UART_vsend("adc value: %d, CHB value: %d, min tone: %f, max tone: %f", 
+      //   new_adc_value, 
+      //   new_freq_value,
+      //   MIN_TONE_FREQ,
+      //   MAX_TONE_FREQ);
+
+      // Write 12 bits
+      snd_write(SND_CHB_FINE_TONE, new_snd_value & 0xFF);
+      snd_write(SND_CHB_ROUGH_TONE, ((new_snd_value >> 8) & 0xF));
     }
 
     // CHC TONE enabled
     if((states.mixer_state & SND_MIXER_CHC_MUTE_TONE) == 0)
     {
+      // Read the adc value
       new_adc_value = adc_read_pin(PORTA3);
-      snd_write(SND_CHA_FINE_TONE, new_adc_value & 0xFF);
-      snd_write(SND_CHA_ROUGH_TONE, ((new_adc_value >> 8) & 0xF));
+
+      // Get the tone value from the adc value
+      new_snd_value = convert_adc_to_tone(new_adc_value);
+
+      // UART_vsend("adc value: %d, CHC value: %d, min tone: %f, max tone: %f", 
+      //   new_adc_value, 
+      //   new_freq_value,
+      //   MIN_TONE_FREQ,
+      //   MAX_TONE_FREQ);
+
+      // Write 12 bits
+      snd_write(SND_CHA_FINE_TONE, new_snd_value & 0xFF);
+      snd_write(SND_CHA_ROUGH_TONE, ((new_snd_value >> 8) & 0xF));
     }
 
     // Noise enabled if it is enabled in any of the channels
     if((states.mixer_state & SND_MASK_MIXER_NOISE) != SND_MASK_MIXER_NOISE)
     {
+      // Read the adc value
       new_adc_value = adc_read_pin(PORTA4);
-      uint8_t freq_value = map(new_adc_value, 0, 0x3FF, 0, 0x1F); // Map the 10-bit value to 5-bit
-      snd_write(SND_NOISE_FREQ, freq_value & 0x1F);
+
+      // Get the noise value from the adc value
+      new_snd_value = convert_adc_to_noise(new_adc_value);
+
+      
+
+      // Write only the first 5 bits
+      snd_write(SND_NOISE_FREQ, new_snd_value & 0x1F);
     }
 
     // Update envelope only if it is enabled on any of the channels
     if((states.cha_state & SND_LEVEL_MODE_ENV) | (states.chb_state & SND_LEVEL_MODE_ENV) | (states.chc_state & SND_LEVEL_MODE_ENV))
     {
+      // Read the adc value
       new_adc_value = adc_read_pin(PORTA0);
-      uint16_t freq_value = map(new_adc_value, 0, 0x3FF, 0, 0xFFFF); // Map the 10-bit value to 16-bit
-      snd_write(SND_ENV_FINE_TONE, freq_value & 0xFF);
-      snd_write(SND_ENV_ROUGH_TONE, (freq_value >> 8));
+
+      // UART_vsend("adc value: %d, ENV value: %d, min env: %f, max env: %f", 
+      //   new_adc_value, 
+      //   new_freq_value,
+      //   MIN_ENV_FREQ,
+      //   MIN_ENV_FREQ);
+
+      // Get the envelope value from the adc value
+      new_snd_value = convert_adc_to_envelope(new_adc_value);
+
+      // Write 16 bits
+      snd_write(SND_ENV_FINE_TONE, new_snd_value & 0xFF);
+      snd_write(SND_ENV_ROUGH_TONE, (new_snd_value >> 8));
     }
   }
 }
