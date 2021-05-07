@@ -6,8 +6,6 @@
 #include "buttons.h"
 #include "ym2149.h"
 
-void state_init(uint16_t btn_states);
-
 void state_update_old_buttons(uint16_t btn_states);
 
 uint8_t state_mixer_changed(uint16_t btn_states, uint8_t* new_state);

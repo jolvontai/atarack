@@ -180,9 +180,8 @@ void run_atarack(void)
   snd_write(SND_CHB_LEVEL, 0xF);
   snd_write(SND_CHC_LEVEL, 0xF);
 
-  // Initialize state machine
+  // Get the state of buttons
   uint16_t btn_states = ldr_get_buttons();
-  state_init(btn_states);
 
   // Local holder for current states
   current_states states;
@@ -323,7 +322,11 @@ void run_atarack(void)
       // Get the noise value from the adc value
       new_snd_value = convert_adc_to_noise(new_adc_value);
 
-      
+      // UART_vsend("adc value: %d, noise value: %d, min noise: %f, max noise: %f", 
+      //   new_adc_value, 
+      //   new_freq_value,
+      //   MIN_ENV_FREQ,
+      //   MIN_ENV_FREQ);
 
       // Write only the first 5 bits
       snd_write(SND_NOISE_FREQ, new_snd_value & 0x1F);

@@ -3,11 +3,6 @@
 // Previous state of buttons
 uint16_t _old_btn_states = 0;
 
-void state_init(uint16_t btn_states)
-{
-    _old_btn_states = btn_states;
-}
-
 void state_update_old_buttons(uint16_t btn_states)
 {
     _old_btn_states = btn_states;
