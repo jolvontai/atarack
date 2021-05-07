@@ -12,7 +12,7 @@
 
 #include "config.h"
 
-// Map value to range
+// Map value to range (int version)
 long map_int(long value, long input_min, long input_max, long output_min, long output_max)
 {
 	if(value > input_max)
@@ -23,6 +23,7 @@ long map_int(long value, long input_min, long input_max, long output_min, long o
 	return (value - input_min) * (output_max - output_min) / (input_max	- input_min) + output_min;
 }
 
+// Map value to range (float version)
 double map_dec(double value, double input_min, double input_max, double output_min, double output_max)
 {
 	if(value > input_max)
@@ -46,19 +47,34 @@ uint16_t convert_adc_to_tone(uint16_t value)
 	// This is nearly perfect, but the halfway between octaves is off by a little
 	double freq = MIN_TONE_FREQ * pow(2.0, octaves);
 
-	// return (uint16_t)(TONE(freq));
-	return (uint16_t)freq;
+	if(freq > MAX_TONE_FREQ)
+	{
+		freq = MAX_TONE_FREQ;
+	}
+
+	return (uint16_t)(TONE(freq));
 }
 
 // Transforms the adc value to soundchip ready noise value
 uint16_t convert_adc_to_noise(uint16_t value)
 {
-	uint16_t return_value = convert_adc_to_tone(value);
+	double percentage_value = (double)value / ADC_MAX_VALUE;
 
-	//UART_vsend("adc: %d, value: %d", value, (return_value & 0x1F));
+	if(percentage_value > 1.0)
+		percentage_value = 1.0;
 
-	// TODO: do we need to do anything else to noise?
-	return convert_adc_to_tone(value);
+	double octaves = OCTAVES * percentage_value;
+
+	// This is nearly perfect, but the halfway between octaves is off by a little
+	double freq = MIN_NOISE_FREQ * pow(2.0, octaves);
+
+	// Clamp the frequency to highest possible
+	if(freq > MAX_NOISE_FREQ)
+	{
+		freq = MAX_NOISE_FREQ;
+	}
+
+	return (uint16_t)(TONE(freq));
 }
 
 // Transforms the adc value to soundchip ready envelope value
@@ -73,6 +89,12 @@ uint16_t convert_adc_to_envelope(uint16_t value)
 
 	// This is nearly perfect, but the halfway between octaves is off by a little
 	double freq = MIN_ENV_FREQ * pow(2.0, octaves);
+
+	// Clamp the frequency to highest possible
+	if(freq > MAX_ENV_FREQ)
+	{
+		freq = MAX_ENV_FREQ;
+	}
 
 	return (uint16_t)(ENVELOPE(freq));
 }

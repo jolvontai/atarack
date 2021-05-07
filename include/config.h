@@ -27,21 +27,20 @@
 // Define greater min value if larger scale is wanted
 #define MIN_TONE_FREQ 49.05
 
-// 5 Octaves higher than the minimum frequency 
-#define MAX_TONE_FREQ MIN_TONE_FREQ * pow(2, OCTAVES)
-
-// The smallest frequency we can output from Envelope (with 2MHz == 0.11hz)
-// Define greater min value if larger scale is wanted
-// #define MIN_ENV_FREQ  F_SND / 256.0 / 65535.0
+// Highest possible tone frequency
+#define MAX_TONE_FREQ F_SND / 16.0 / 1.0
 
 // Envelope starts from 16.0 now, should we abandon the 1v/oct here?
-#define MIN_ENV_FREQ  16.0
+#define MIN_ENV_FREQ  2.0
 
-// 5 Octaves higher than the minimum frequency
-#define MAX_ENV_FREQ MIN_TONE_FREQ * pow(2, OCTAVES)
+// Highest possible envelope freq
+#define MAX_ENV_FREQ F_SND / 256.0 / 1
 
-// Smallest possible frequency for noise (around 16.07hz)
-#define MIN_NOISE_FREQ  F_SND / 16.0 / 7777.0
+// Smallest possible frequency for noise (around 4032hz)
+#define MIN_NOISE_FREQ  F_SND / 16.0 / 31.0
+
+// HIghest possible frequency for noise (125Khz)
+#define MAX_NOISE_FREQ F_SND / 16.0 / 1.0
 
 // Channel volume (range: 0-15)
 #define CHANNEL_VOLUME 0xF
