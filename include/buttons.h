@@ -4,17 +4,17 @@
 // Channel A
 #define BTN_CHA_ENABLE  (1<<2)
 #define BTN_CHA_NOISE   (1<<5)
-#define BTN_CHA_ENV   (1<<13)
+#define BTN_CHA_ENV     (1<<13)
 
 // Channel B
 #define BTN_CHB_ENABLE  (1<<1)
 #define BTN_CHB_NOISE   (1<<4)
-#define BTN_CHB_ENV   (1<<12)
+#define BTN_CHB_ENV     (1<<12)
 
 // Channel C
 #define BTN_CHC_ENABLE  (1<<0)
 #define BTN_CHC_NOISE   (1<<3)
-#define BTN_CHC_ENV   (1<<11)
+#define BTN_CHC_ENV     (1<<11)
 
 // Envelope
 #define BTN_ENV_HOLD    (1<<14)          
